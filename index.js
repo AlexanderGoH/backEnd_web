@@ -4,8 +4,8 @@ const bodyParser = require('body-parser');
 const cors = require('cors')
 
 const client = createClient({
-  url: "libsql://testclass2-jgaviria0.turso.io",
-  authToken: "eyJhbGciOiJFZERTQSIsInR5cCI6IkpXVCJ9.eyJhIjoicnciLCJpYXQiOjE3MTUzOTQyMTEsImlkIjoiMTU2YmE0OTAtNTMwMy00YjYyLWI5MTMtYmRjNjc3ZWEyZTcwIn0.wtU8fNLE7PrOmTKyeDBpsT-nWP94V2YSdQ0B4zIxFSskYSD4Pzjw1HSyTuJFaBJ1FeJqwizuz7VQErf9WWQKDA",
+  url: "libsql://productos-db-alexgoh.turso.io",
+  authToken: "eyJhbGciOiJFZERTQSIsInR5cCI6IkpXVCJ9.eyJhIjoicnciLCJpYXQiOjE3MTY3NDMzMjgsImlkIjoiZTkyZDAzOWEtNjYyMi00NWFkLTg3Y2MtZTdkNTFhMTAwMjdkIn0.t22g0Ov4svajCLgVxTDm3yQQQy1EHlY-58t2GL-ihlz71IY-tCPbhafDp6wz2ZpQj_PZYkOvwO7YKIYO5Q1uBw",
 });
 
 const app = express();
@@ -16,28 +16,36 @@ app.use(cors());
 
 const PORT = process.env.PORT || 3000;
 
-app.get('/characters', async (req, res) => {
-  const characters = await client.execute("SELECT * FROM characters"); 
-    res.json({results: characters.rows, info: "ok"});
+app.get('/products', async (req, res) => {
+  const products = await client.execute("SELECT * FROM products"); 
+    res.json({results: products.rows, info: "ok"});
 }); 
 
-app.post('/characters', async (req, res) => {
-  const { name, status, image } = req.body;
+app.post('/products', async (req, res) => {
+  const { title, price, description, categoryId, image } = req.body;
 
-  const characters = await client.execute(`
-    INSERT INTO characters (name, status, image) VALUES ("${name}", "${status}", "${image}");`
+  const products = await client.execute(`
+    INSERT INTO products (title, price, description, categoryId, image) VALUES ("${title}", "${price}", "${description}", "${categoryId}", "${image}");`
   ); 
-  res.json({ message: "Character created"});
+  res.json({ message: "Product created"});
 }); 
 
-// app.put(''){
-
-// }
-
-app.delete('/characters/:id', async (req, res) => {
+app.put("/products/:id", async (req, res) => {
   const { id } = req.params;
-  await client.execute(`DELETE FROM characters WHERE id = ${id}`); 
-  res.json({message: "Character deleted"});
+  const { title, price, description, categoryId, image } = req.body;
+
+  await client.execute(`
+    UPDATE products 
+    SET title = "${title}", price = "${price}", description = "${description}", categoryId = "${categoryId}", image = "${image}" 
+    WHERE id = ${id}
+    `); 
+  res.json({message: "Product updated"});
+});
+
+app.delete('/products/:id', async (req, res) => {
+  const { id } = req.params;
+  await client.execute(`DELETE FROM products WHERE id = ${id}`); 
+  res.json({message: "Product deleted"});
 }); 
 
 app.listen(PORT, () => {
