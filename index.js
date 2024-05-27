@@ -19,24 +19,30 @@ const PORT = process.env.PORT || 3000;
 app.get('/products', async (req, res) => {
   const products = await client.execute("SELECT * FROM products"); 
     res.json({results: products.rows, info: "ok"});
-}); 
+});
+
+app.get('/products/:id', async (req, res) => {
+  const { id } = req.params;
+  const product = await client.execute(`SELECT * FROM products WHERE id = ${id}`); 
+  res.json({results: product.rows, info: "ok"});
+});
 
 app.post('/products', async (req, res) => {
-  const { title, price, description, categoryId, image } = req.body;
+  const { title, price, description, category, image } = req.body;
 
   const products = await client.execute(`
-    INSERT INTO products (title, price, description, categoryId, image) VALUES ("${title}", "${price}", "${description}", "${categoryId}", "${image}");`
+    INSERT INTO products (title, price, description, category, image) VALUES ("${title}", "${price}", "${description}", "${category}", "${image}");`
   ); 
   res.json({ message: "Product created"});
 }); 
 
 app.put("/products/:id", async (req, res) => {
   const { id } = req.params;
-  const { title, price, description, categoryId, image } = req.body;
+  const { title, price, description, category, image } = req.body;
 
   await client.execute(`
     UPDATE products 
-    SET title = "${title}", price = "${price}", description = "${description}", categoryId = "${categoryId}", image = "${image}" 
+    SET title = "${title}", price = "${price}", description = "${description}", category = "${category}", image = "${image}" 
     WHERE id = ${id}
     `); 
   res.json({message: "Product updated"});
